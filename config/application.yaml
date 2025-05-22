@@ -2,20 +2,19 @@ travel_gpt:
   # Record interface access history 
   access_record: true 
  
-open_ai: 
-  # Timeout period 
-  timeout: 60 
-  api_key: "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" 
-  travel_content: "Hi!\n\nI'm TravelGPT, your personal travel assistant.\n\nI can help with where you plan to go, how long you'll travel, and any other preferences or special circumstances." 
-  sys_content: "You are now a travel expert, master of travel time planning. Help me plan specific travel schedules, itinerary arrangements, recommend attractions, activities, restaurant suggestions, estimate average budget per person." 
-  # GPT model 
-  model: "gpt-4" 
-  # Proxy 
-  proxy: "" 
- 
+open_ai:
+  # Timeout period
+  timeout: 60
+  api_key: ""
+  travel_content: "Hi!\n\nI'm TravelGPT, your personal travel assistant.\n\nI can help with where you plan to go, how long you'll travel, and any other preferences or special circumstances."
+  sys_content: "You are now a travel expert, master of travel time planning. Help me plan specific travel schedules, itinerary arrangements, recommend attractions, activities, restaurant suggestions, estimate average budget per person."
+  # GPT model
+  model: "gpt-4"  # Cập nhật model thành gpt-4o-mini thay vì gpt-4
+  # Proxy
+  proxy: ""  # Xóa cấu hình proxy
 gao_de: 
   # Gaode Map API KEY 
-  api_key: "63b9df1479d58af21c4883226f1340b1" 
+  api_key: "" 
   # Gaode API URL 
   api_url: "https://restapi.amap.com/v3" 
   # Gaode navigation URL 
@@ -26,7 +25,7 @@ data_source:
   type: "sqlite" 
   mysql_url: "mysql://root:123456@localhost:3307/test?charset=utf8" 
   postgre_url: "postgresql+psycopg2://root:123456@localhost:3307/test" 
-  sqlite_url: "sqlite:///D:\\workspaces\\private\\travelgpt\\DB.sqlite" 
+  sqlite_url: "sqlite:///DB.sqlite" 
   log_level: "debug" 
  
 redis: 

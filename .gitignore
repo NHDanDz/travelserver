@@ -53,3 +53,5 @@ rebel.xml
 bakup.bat
 bakup.sh
 .classes/
+.config/
+.env
