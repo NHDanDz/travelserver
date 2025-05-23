@@ -85,7 +85,7 @@ async def chat(message: dict):
         "session_id": session_id,
         "messages": [your_message]
     })
-
+    print(message_list)
     # Send message, return a streaming response
     return EventSourceResponse(get_openai_stream_generator(message_list))
 
@@ -108,3 +108,18 @@ async def save(message: dict = None):
     return success("Session saved successfully", {"session_id": session_id})
 
 
+@logger.catch()
+@route.post("/_switch_provider", summary='Switch AI Provider')
+async def switch_provider(provider_data: dict):
+    """
+    Switch between OpenAI and Gemini
+    {"provider": "openai"} or {"provider": "gemini"}
+    """
+    new_provider = provider_data.get("provider", "openai")
+    if new_provider not in ["openai", "gemini"]:
+        return error("Provider must be 'openai' or 'gemini'")
+    
+    # Cập nhật provider trong runtime (có thể lưu vào Redis hoặc database)
+    # Ở đây chỉ log để demo
+    logger.info(f"Switched to provider: {new_provider}")
+    return success(f"Switched to {new_provider} provider", {"provider": new_provider})

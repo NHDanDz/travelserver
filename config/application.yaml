@@ -3,15 +3,14 @@ travel_gpt:
   access_record: true 
  
 open_ai:
-  # Timeout period
+  provider: "gemini"  # hoặc "gemini" để chọn AI provider
   timeout: 60
   api_key: ""
   travel_content: "Hi!\n\nI'm TravelGPT, your personal travel assistant.\n\nI can help with where you plan to go, how long you'll travel, and any other preferences or special circumstances."
   sys_content: "You are now a travel expert, master of travel time planning. Help me plan specific travel schedules, itinerary arrangements, recommend attractions, activities, restaurant suggestions, estimate average budget per person."
-  # GPT model
-  model: "gpt-4"  # Cập nhật model thành gpt-4o-mini thay vì gpt-4
-  # Proxy
-  proxy: ""  # Xóa cấu hình proxy
+  model: "gpt-4"
+  proxy: ""
+
 gao_de: 
   # Gaode Map API KEY 
   api_key: "" 
@@ -36,3 +35,8 @@ redis:
  
 reset_pwd: 
   url: http://localhost:8089/test 
+
+gemini:
+  api_key: ""
+  model: "gemini-2.0-flash"
+  timeout: 60

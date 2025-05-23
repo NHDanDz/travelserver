@@ -5,10 +5,12 @@ import httpx
 from dotenv import load_dotenv
 from openai import OpenAI
 from apps.base.log import logger
-
+from common.utils.gemini_utils import get_gemini_stream_generator, get_gemini_generator
 from common.utils import load_yaml, load_json
 
 load_dotenv()
+
+provider = os.environ.get("AI_PROVIDER") or cfg.get("open_ai", {}).get("provider", "openai")
 
 # Load application configuration
 cfg = load_yaml("config/application.yaml")
@@ -37,6 +39,10 @@ client = OpenAI(
 )
 
 async def get_openai_stream_generator(request_messages: array):
+    if provider == "gemini":
+        async for chunk in get_gemini_stream_generator(request_messages):
+            yield chunk
+        return
     message_list = []
     message_list.extend(pre_messages)
     message_list.extend(request_messages)
@@ -102,6 +108,8 @@ async def get_openai_stream_generator(request_messages: array):
         yield json.dumps({'message': f'Error: {str(e)}', 'code': 500, 'data': ''}, ensure_ascii=False)
 
 async def get_openai_generator(request_messages: array):
+    if provider == "gemini":
+        return await get_gemini_generator(request_messages)
     message_list = []
     message_list.extend(pre_messages)
     message_list.extend(request_messages)
