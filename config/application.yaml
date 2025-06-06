@@ -3,14 +3,13 @@ travel_gpt:
   access_record: true 
  
 open_ai:
-  provider: "gemini"  # hoặc "gemini" để chọn AI provider
+  # Timeout period
   timeout: 60
-  api_key: ""
+  api_key: ""  # Để trống, sẽ dùng GEMINI_API_KEY từ .env
   travel_content: "Hi!\n\nI'm TravelGPT, your personal travel assistant.\n\nI can help with where you plan to go, how long you'll travel, and any other preferences or special circumstances."
   sys_content: "You are now a travel expert, master of travel time planning. Help me plan specific travel schedules, itinerary arrangements, recommend attractions, activities, restaurant suggestions, estimate average budget per person."
-  model: "gpt-4"
+  model: "gemini-2.0-flash"  # Thay đổi thành Gemini model
   proxy: ""
-
 gao_de: 
   # Gaode Map API KEY 
   api_key: "" 

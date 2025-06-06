@@ -3,9 +3,6 @@ import array
 import json
 import os
 
-import httpx
-from openai import OpenAI
-
 from apps.api.base import error, success, check_not_empty
 from apps.api.chat_pri import save_chat_history
 from apps.api.service.history_service import get_history_by_session_id
@@ -26,26 +23,8 @@ load_dotenv()
 # Read application configuration
 cfg = load_yaml("config/application.yaml")
 
-# Request timeout
-timeout = os.environ.get("OPENAI_API_TIMEOUT") or cfg.get("open_ai").get("timeout")
-# API_KEY
-api_key = os.environ.get("OPENAI_API_KEY") or cfg.get("open_ai").get("api_key")
-# System content
-sys_content = os.environ.get("OPENAI_API_SYS_CONTENT") or cfg.get("open_ai").get("sys_content")
 # Session start content
 travel_content = os.environ.get("OPENAI_API_TRAVEL_CONTENT") or cfg.get("open_ai").get("travel_content")
-# Model in use
-model = os.environ.get("OPENAI_API_MODEL") or cfg.get("open_ai").get("model")
-# Proxy
-proxy = os.environ.get("OPENAI_API_PROXY") or cfg.get("open_ai").get("proxy") or None
-# HTTP client with proxy
-http_client = httpx.Client(proxy=proxy) if proxy else httpx.Client()
-
-client = OpenAI(
-    timeout=timeout,
-    api_key=api_key,
-    http_client=http_client,
-)
 
 travel_message = [{"role": "travel", "content": travel_content}]
 
@@ -60,10 +39,10 @@ async def new_chat():
 
 
 @logger.catch()
-@route.post("/_chat", summary='Send messages to ChatGPT')
+@route.post("/_chat", summary='Send messages to AI')
 async def chat(message: dict):
     """
-     {"session_id", "123", "role":"user", "content":"Hello"}
+     {"session_id", "123", "content":"Hello"}
     """
     session_id = message.get("session_id")
     content = message.get("content")
@@ -85,7 +64,7 @@ async def chat(message: dict):
         "session_id": session_id,
         "messages": [your_message]
     })
-    print(message_list)
+    
     # Send message, return a streaming response
     return EventSourceResponse(get_openai_stream_generator(message_list))
 
@@ -109,17 +88,49 @@ async def save(message: dict = None):
 
 
 @logger.catch()
-@route.post("/_switch_provider", summary='Switch AI Provider')
-async def switch_provider(provider_data: dict):
+@route.post("/_chat_complete", summary='Send message và nhận response đầy đủ')
+async def chat_complete(message: dict):
     """
-    Switch between OpenAI and Gemini
-    {"provider": "openai"} or {"provider": "gemini"}
+    Endpoint trả về response hoàn chỉnh thay vì streaming
+    {"session_id": "123", "content": "Hello"}
     """
-    new_provider = provider_data.get("provider", "openai")
-    if new_provider not in ["openai", "gemini"]:
-        return error("Provider must be 'openai' or 'gemini'")
-    
-    # Cập nhật provider trong runtime (có thể lưu vào Redis hoặc database)
-    # Ở đây chỉ log để demo
-    logger.info(f"Switched to provider: {new_provider}")
-    return success(f"Switched to {new_provider} provider", {"provider": new_provider})
+    session_id = message.get("session_id")
+    content = message.get("content")
+    check_not_empty(session_id, "Session ID cannot be empty")
+    check_not_empty(content, "Message content cannot be empty")
+
+    your_message = {"role": "user", "content": content}
+    logger.info(f"Sending message: `{your_message}`")
+
+    # Get message history
+    history_message_list = await get_history_by_session_id(session_id)
+    message_list = []
+    for item in history_message_list:
+        message_list.append(item.get("message"))
+    message_list.append(your_message)
+
+    # Save your message
+    await save_chat_history(None, {
+        "session_id": session_id,
+        "messages": [your_message]
+    })
+
+    # Get complete response using Gemini (via openai_utils.py)
+    try:
+        response_text = await get_openai_generator(message_list)
+        print(response_text) 
+        # Save AI response
+        ai_message = {"role": "assistant", "content": response_text}
+        await save_chat_history(None, {
+            "session_id": session_id,
+            "messages": [ai_message]
+        })
+
+        return success("Response completed", {
+            "session_id": session_id,
+            "response": response_text
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting response: {str(e)}")
+        return error(f"Error: {str(e)}")
